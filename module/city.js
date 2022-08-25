@@ -1,16 +1,11 @@
 // 城市
 
 module.exports = (query, request) => {
+  query._log && console.log(`module[城市]: /city\n`)
+  let data = {
+    _log: query._log
+  }
   return request(
-    'GET', `http://m.maoyan.com/dianying/cities.json`, {}, {}
+    'GET', `http://m.maoyan.com/dianying/cities.json`, data
   )
 }
-
-// ,
-// {
-//   "name": "城市",
-//   "path": "/city",
-//   "file": "city.js",
-//   "method": "GET",
-//   "data": []
-// }

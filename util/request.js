@@ -1,66 +1,109 @@
-const request = require('request')
-const queryString = require('querystring')
 
-const chooseUserAgent = ua => {
-  const userAgentList = [
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
-    'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36',
-    'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36',
-    'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_2 like Mac OS X) AppleWebKit/603.2.4 (KHTML, like Gecko) Mobile/14F89;GameHelper',
-    'Mozilla/5.0 (iPhone; CPU iPhone OS 10_0 like Mac OS X) AppleWebKit/602.1.38 (KHTML, like Gecko) Version/10.0 Mobile/14A300 Safari/602.1',
-    'Mozilla/5.0 (iPad; CPU OS 10_0 like Mac OS X) AppleWebKit/602.1.38 (KHTML, like Gecko) Version/10.0 Mobile/14A300 Safari/602.1',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:46.0) Gecko/20100101 Firefox/46.0',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/603.2.4 (KHTML, like Gecko) Version/10.1.1 Safari/603.2.4',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:46.0) Gecko/20100101 Firefox/46.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/13.10586'
-  ]
-  let index = 0
-  if (typeof ua == 'undefined')
-    index = Math.floor(Math.random() * userAgentList.length)
-  else if (ua === 'mobile') index = Math.floor(Math.random() * 7)
-  else if (ua === 'pc') index = Math.floor(Math.random() * 5) + 8
-  else return ua
-  return userAgentList[index]
-}
+const axios = require('axios')
+const { chooseUserAgent, cookieStringify, cookieParse, paramsStringify } = require('./index')
+const ResultCode = require('./ResultCode')
 
-const createRequest = (method, url, data, options) => {
+/**
+ * 配置
+ */
+axios.default.interceptors.request.use(config => {
+  const cookie = config.headers.cookie
+  // 判断是否配置是否有 cookie
+  if (cookie && cookie['ci'] && cookie['ct']) {
+    const { ci, ct } = cookie
+    // 获取城市 id 名字
+    cookie['ci'] = `${ci},${ct}`
+  }
+  // 将 cookie 对象转成 字符串
+  config.headers.cookie = cookieStringify(config.headers.cookie)
+  return config
+})
+
+/**
+ * 
+ * @param {string} method 请求方法
+ * @param {string} url 请求路径
+ * @param {object} data 请求数据 data headers params cookies
+ * @returns 返回 Promise
+ */
+async function createRequest(method, url, data = {}, options = {}) {
 
 
-  return new Promise((resolve, reject) => {
-    let headers = { 'User-Agent': chooseUserAgent(options.ua) }
-    if (method.toUpperCase() === 'POST') {
-      headers['Content-Type'] = 'application/x-www-form-urlencoded'
-    } else if (method.toUpperCase() === 'GET') {
-      url = `${url}?${queryString.stringify(data)}`
+  const headers = {
+    cookie: data.cookie,
+    'User-Agent': chooseUserAgent(),
+    // 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+    // 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    // 'sec-ch-ua':  '"Chromium";v="104", " Not A;Brand";v="99", "Google Chrome";v="104"',
+    // 'sec-ch-ua-platform': '"macOS"',
+    ...data.headers
+  }
+  const settings = {
+    method,
+    url,
+    headers: headers,
+    params: data.params,
+    data: data.data
+  }
+  data._log && console.log(`[开始请求: [${method}]]: ${url}${url.includes('?') ? '&' : '?'}${paramsStringify(data.params)}\n`)
+  // 返回数据的 code
+  const result = {}
+  try {
+    const response = await axios(settings)
+    let RCode = ResultCode.success
+    result.data = response.data
+    // 解析返回的 cookie
+    let cookie = {}
+    if (response.headers['set-cookie'] && response.headers['set-cookie'].length > 0) {
+      cookie = cookieParse(response.headers['set-cookie'])
     }
-
-    const answer = { status: 500, body: {}, cookie: [] }
-    const settings = {
-      method: method,
-      url: url,
-      headers: headers,
-      body: queryString.stringify(data)
-    }
-
-    request(settings, (err, res, body) => {
-      if (err) {
-        answer.status = 502
-        answer.body = { code: 502, msg: err.stack }
-        reject(answer)
-      } else {
-        answer.cookie = (res.headers['set-cookie'] || []).map(x =>
-          x.replace(/\s*Domain=[^(;|$)]+;*/, '')
-        )
-        answer.status = res.statusCode
-        answer.body = body
-        resolve(answer)
+    // 返回数据类型
+    let resultType = response.headers['content-type']
+    if (resultType.includes('application/json')) {
+      // json
+      if (typeof(response.data) === 'string' || typeof (response.data['success']) === 'boolean' && !response.data['success']) {
+        // 返回数据出错
+        RCode = ResultCode.error
       }
-    })
-  })
+    } else if (resultType.includes('text/html')) {
+      // html
+      if (options['ssr']) {
+        // ssr  解析 html
+        let data = response.data
+        const patt =  /AppData\s*=([\d\D]*?);{0,1}\s*<\/script/.exec(data)
+        if (!patt) {
+          RCode = ResultCode.error
+        } else {
+          let dataJson = JSON.parse(patt[1])
+          result.data = dataJson
+        }
+      } else {
+        RCode = ResultCode.error
+      }
+
+    } else {
+      // 其他
+      RCode = ResultCode.rest
+    }
+
+    return {
+      ...result,
+      cookie,
+      ...RCode
+    }
+  } catch (error) {
+
+    // 请求失败
+    result.code = ResultCode.noServer.code
+    result.message = `${ResultCode.noServer.message}: ${error.message}`
+
+  }
+
+
+  return result
+
 }
+
+
 
 module.exports = createRequest

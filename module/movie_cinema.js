@@ -1,21 +1,57 @@
-//  电影影院
-const common = require('../util/common')
+const moment = require('moment')
 module.exports = (query, request) => {
-  let data = Object.assign({
-    offset: 0,
-    limit: 10,
-    districtId: -1,
-    lineId: -1,
-    hallType: -1,
-    brandId: -1,
-    serviceId: -1,
-    areaId: -1,
-    stationId: -1,
-    updateShowDay: true,
-    reqId: Date.now()
-  }, query, common)
+  query._log && console.log(`module[播放当前电影的影院]: /movie/cinema  ${
+    [
+      'movieId: 电影id',
+      'ci: 城市id',
+      'lat?: 纬度',
+      'lng?: 经度',
+      'offset?: 偏移量，默认0',
+      'limit?: 返回数量，默认20',
+      'districtId?:区号，默认-1',
+      'lineId?: 地铁线，默认-1',
+      'areaId?: 区域，默认-1',
+      'stationId?: 地铁站，-1',
+      'brandIds?: 影城，默认-1',
+      'serviceIds?: 影城服务,默认-1，1改签，2退票',
+      'hallTypeIds?: 影厅类型，默认all',
+      'languageIds?: 放映语言，默认all',
+      'dimIds?: 影片版本，默认all'
+    ].join('  ')
+  }\n`)
+
+  let params = {
+    cityId: query.ci,
+    ci: query.ci,
+    movieId: query.movieId,
+    limit: query.limit || 20,
+    offset: query.offset || 0,
+    channelId: 4,
+    showDate: moment().format('YYYY-MM-DD'),
+    districtId: query.districtId || -1, //区号
+    lineId: query.lineId || -1,// 地铁线路id -1
+    areaId: query.areaId || -1,// 区域id
+    stationId: query.stationId || -1, //地铁站id
+    brandIds:  `[${query.brandIds||-1}]`, //影城 id
+    serviceIds:`[${query.serviceIds || -1}]`,// 影院服务  1改签 2退票
+    hallTypeIds: `["${query.hallTypeIds || "all"}"]`,// 影厅类型
+    languageIds: `["${query.languageIds||"all"}"]`,//放映语言
+    dimIds: `["${query.dimIds||"all"}"]`,//影片版本
+  }
+  /// 经纬度
+  const { lat, lng } = query
+  if (lat && lng) {
+    params.lat = lat
+    params.lng = lng
+  }
+
+  const data = {
+    params,
+    cookie: query['cookie'],
+    _log: query._log
+  }
   return request(
-    'POST', `http://m.maoyan.com/ajax/movie?forceUpdate=${Date.now()}`, data, {}
+    'GET', `http://m.maoyan.com/api/mtrade/mmcs/cinema/v2/select/movie/cinemas.json`, data
   )
 }
 

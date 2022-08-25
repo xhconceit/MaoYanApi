@@ -1,378 +1,385 @@
-# MaoYan API
+# 猫眼API
 
-猫眼 API
+猫眼 Node.js API service
 
-## 工作原理
+## 灵感来自
 
-跨站请求伪造 (CSRF), 伪造请求头 , 调用官方 API
+[Binaryify/NeteaseCloudMusicApi](https://github.com/Binaryify/NeteaseCloudMusicApi)
+
+
+## 环境要求
+需要 NodeJS 8.12+ 环境
 
 ## 安装
 
 ```shell
-$ git clone https://github.com/xhconceit/MaoYanApi.git
+git clone https://github.com/xhconceit/maoyanapi
 
-$ npm install
+yarn
 ```
 
 ## 运行
 
 ```shell
-$ node index.js
+$ node app.js
 ```
 
-服务器启动默认端口为 3000, 若不想使用 3000 端口 , 可使用以下命令 : Mac/Linux
+服务器启动默认端口为 3000,若不想使用 3000 端口,可使用以下命令: Mac/Linux
 
 ```shell
-$ PORT=4000 node index.js
+$ PORT=4000 node app.js
 ```
 
-windows 下使用 git-bash 或者 cmder 等终端执行以下命令 :
+windows 下使用 git-bash 或者 cmder 等终端执行以下命令:
 
 ```shell
-$ set PORT=4000 && node index.js
-```
-
-服务器启动默认 host 为 localhost,如果需要更改, 可使用以下命令 : Mac/Linux
-
-```shell
-$ HOST=127.0.0.1 node index.js
-```
-
-windows 下使用 git-bash 或者 cmder 等终端执行以下命令 :
-
-```shell
-$ set HOST=127.0.0.1 && node index.js
+$ set PORT=4000 && node app.js
 ```
 
 ## 功能特性
 
 1. 城市
-2. 热映
-3. 即将上映
-4. 近期最受期待
-5. 搜索电影
-6. 搜索电影
-7. 城市影院筛选
-8. 城市影院列表
-9. 搜索影院
-10. 搜索影院
-11. 电影详情
-12. 电影影院筛选
-13. 电影影院列表
-14. 影院详情
-15. 选择座位
-16. 票房排名
+2. 热映电影
+3. 近期最受期待
+4. 电影分类
+5. 电影列表
+6. 电影详情
+7. 电影放映日期
+8. 电影筛选影院
+9. 获取播放当前电影的影院
+10. 城市影院筛选
+11. 影院列表
+12. 影院详情
+13. 影院播放电影列表
+14. 座位
+15. 搜索电影，影院
+16. 搜索影院
+17. 搜索电影
+18. 明星详情
+
 
 ## 接口文档
 
 ### 调用前须知
 
-!> 文档全部使用 GET 请求
 
-!> 默认不返回 cookie ,如果需要 cookie 请在请求头设置 set-cookie 为 true
+!> 本项目仅供学习使用,请尊重版权，请勿利用此项目从事商业行为或进行破坏版权行为
 
-!> 本项目仅供学习使用,请尊重版权，请勿利用此项目从事商业行为
+!> 调用前需要在当前项目下新建一个 cookie.txt 文件，并在浏览器登陆自己的账号获取 cookie ，写入 cookie.txt 文件中，否则会有一些 API 无法调用。
 
-!> 参数 `optimus_uuid` 是访问猫眼首页返回 cookie 里面的值 ,请自行获取
+!> 全部接口都是使用 GET 请求
 
-### 城市
+#### 1. 城市
 
-说明 : 调用此接口 ,获取城市列表
+说明: 获取全部城市名字和 ID
 
 **接口地址 :** `/city`
 
-**调用例子 :** `/city`
+#### 2. 热映电影
 
-### 热映
+说明: 正在热播的电影
 
-说明 : 调用此接口 ,获取正在热映的电影
+必选参数: 
 
-**必选参数 :**
+`ci`: 城市 id
 
-    ci : 城市ID
-
-    optimus_uuid : uID
+`ct`: 城市名字
 
 **接口地址 :** `/movie/hot`
 
-**调用例子 :** `/movie/hot?ci=20&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+**调用例子 :** `/movie/hot?ci=20&ct=广州`
 
-### 即将上映
+#### 3. 近期最受期待
 
-说明 : 调用此接口 ,获取即将上映的电影
+说明: 近期最受期待的电影
 
-**必选参数 :**
+必选参数: 
 
-    ci : 城市ID
+`ci`: 城市 id
 
-    optimus_uuid : uID
+`ct`: 城市名字
 
-**可选参数 :**
+可选参数: 
 
-    limit : 返回数量
+`limit`: 返回数量 , 默认为 10
 
-**接口地址 :** `/movie/coming`
+`offset`: 偏移数量 , 默认为 0
 
-**调用例子 :** `/movie/coming?ci=20&limit=10&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+**接口地址 :** /movie/expected
 
-### 近期最受期待
+**调用例子 :** /movie/expected?ci=20&ct=广州`
 
-说明 : 调用此接口 ,获取近期最受期待的电影
+#### 4. 电影分类
 
-**必选参数 :**
+说明: 分类下的电影
 
-    ci : 城市ID
+可选参数: 
 
-    optimus_uuid : uID
+`sortId`: 电影排序 id ，默认: 1。 1: 热门排序 2: 时间排序 3: 评价排序
 
-**可选参数 :**
+`showType`: 电影类型 id，默认:3。 1: 正在热映 2: 即将上映 3: 经典影片
 
-    limit : 返回数量
+`limit`: 返回数量 , 默认为 10
 
-    offset : 列表起始位置，默认值为0
+`offset`: 偏移数量 , 默认为 0
 
-**接口地址 :** `/movie/coming`
 
-**调用例子 :** `/movie/coming?ci=20&limit=10&offset=0&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+**接口地址 :** /movie/class
 
-### 搜索电影
+**调用例子 :** /movie/class
 
-说明 : 搜索电影有两个接口
+#### 5. 电影列表
 
-#### 搜索 TOP 电影
+说明: 电影列表
 
-说明 : 调用此接口 ,搜索电影 ,该接口只返回前面几条数据
+必选参数: 
 
-**必选参数 :**
+`movieIds`: 电影 ID，多部电影以 , 隔开。
 
-    kw : 关键词
+**接口地址 :** /movie/list
 
-**接口地址 :** `/movies/top/search`
+**调用例子 :** /movie/list?movieIds=7290,1367251
 
-**调用例子 :** `/movies/top/search?kw=大话西游`
+#### 6. 电影详情
 
-#### 搜索电影
+说明: 电影详情
 
-说明 : 调用此接口 ,搜索电影 ,该接口不可以返回第一条数据
+必选参数: 
 
-**必选参数 :**
+`movieId`: 电影ID
 
-    kw : 关键词
+**接口地址 :** /movie/detail
 
-**可选参数 :**
+**调用例子 :** /movie/detail?movieId=1359034
 
-    limit : 返回数量
+#### 7. 电影放映日期
 
-    offset : 列表起始位置，默认值为0 ,该值不可以为 0
+说明: 获取电影放映日期
 
-**接口地址 :** `/movies/search`
+必选参数: 
 
-**调用例子 :** `/movies/search?kw=大话西游&limit=10&offset=0`
+`ci`: 城市id
 
-### 城市影院筛选
+`movieId`: 电影ID
 
-说明 : 调用此接口 ,获取城市影院筛选
+**接口地址 :** /movie/days
 
-**必选参数 :**
+**调用例子 :** /movie/days?movieId=1359034&ci=20
 
-    ci : 城市ID
+#### 8. 电影筛选影院
 
-    optimus_uuid : uID
+说明: 电影筛选影院
 
-**接口地址 :** `/cinema/filter`
+必选参数: 
 
-**调用例子 :** `/cinema/filter?ci=20&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+`ci`: 城市 ID
 
-### 城市影院列表
+`movieId`: 电影ID
 
-说明 : 调用此接口 ,获取城市影院列表
+可选参数: 
 
-**必选参数 :**
+`showDate`: 日期，默认今天，格式: YYYY-MM-DD
 
-    day : 日期
+**接口地址 :** /movie/filter/cinema
 
-    reqId : 时间戳
+**调用例子 :** /movie/filter/cinema?movieId=1359034&ci=20
 
-    cityId : 城市id
+#### 9. 获取播放当前电影的影院
 
-    optimus_uuid : 城市id
+说明: 获取播放当前电影的影院
 
-**可选参数 :**
+必选参数: 
 
-    limit : 返回数量
+`ci`: 城市 ID
 
-    offset : 列表起始位置，默认值为 0
+`movieId`: 电影ID
 
-    districtId : 县区ID, 用于筛选影院
+可选参数: 
 
-    areaId : 商区ID, 用于筛选影院
+`lat`: 纬度
 
-    hallType : 放映影厅ID, 用于筛选影院
+`lng`: 经度
 
-    brandId : 影院品牌ID, 用于筛选影院
+`limit`: 返回数量 , 默认为 10
 
-    serviceId : 影院服务ID, 用于筛选影院
+`offset`: 偏移数量 , 默认为 0
 
-    lineId : 地铁线ID, 用于筛选影院
+`districtId`: 区号 , 默认 -1
 
-    stationId : 地铁站ID, 用于筛选影院
+`lineId`: 地铁线 , 默认 -1
 
-**接口地址 :** `/cinema`
+`areaId`: 区域 , 默认 -1
 
-**调用例子 :** `/cinema?day=2020-01-14&limit=10&offset=0&districtId=-1&areaId=-1&hallType=-1&brandId=-1&serviceId=-1&lineId=-1&stationId=-1&reqId=1579328443243&cityId=10&optimus_uuid=81816C30379C11EA866471AA6600D9F3FFCD3520A18D43F0B1C3B05472B68BB4`
+`stationId`: 地铁站 , -1
 
-### 搜索影院
+`brandIds`: 影城 , 默认 -1
 
-说明 : 搜索影院有两个接口
+`serviceIds`: 影城服务 , 默认 -1 , 1: 改签 , 2: 退票
 
-#### 搜索 TOP 影院
+`hallTypeIds`: 影厅类型 , 默认 all
 
-说明 : 调用此接口 ,搜索影院 ,该接口只返回前面几条数据
+`languageIds`: 放映语言 , 默认 all
 
-**必选参数 :**
+`dimIds`: 影片版本 , 默认 all'
 
-    kw : 关键词
+**接口地址 :** /movie/cinema?movieId=1359034&ci=20
 
-**接口地址 :** `/cinema/top/search`
+**调用例子 :** /movie/cinema?movieId=1359034&ci=20
 
-**调用例子 :** `/cinema/top/search?kw=万达广场`
+#### 10. 城市影院筛选
 
-#### 搜索影院
+说明: 城市影院筛选
 
-说明 : 调用此接口 ,搜索影院 ,该接口不可以返回第一条数据
+必选参数: 
 
-**必选参数 :**
+`ci`: 城市 ID
 
-    kw : 关键词
+**接口地址 :** /cinema/filter
 
-**可选参数 :**
+**调用例子 :** /cinema/filter?ci=1
 
-    limit : 返回数量
+#### 11. 影院列表
 
-    offset : 列表起始位置，默认值为1 ,该值不可以为 0
+说明: 影院列表
 
-**接口地址 :** `/cinema/search`
+必选参数: 
 
-**调用例子 :** `/cinema/search?kw=万达广场&limit=10&offset=0`
+`ci`: 城市 ID
 
-### 电影详情
+可选参数: 
 
-说明 : 调用此接口 ,获取电影详情
+`showDate`: 日期，默认今天，格式: YYYY-MM-DD
 
-**必选参数 :**
+`limit`: 返回数量 , 默认为 10
 
-    movieId : 电影ID
+`offset`: 偏移数量 , 默认为 0
 
-    optimus_uuid : uID
+`districtId`: 区号 , 默认 -1
 
-**接口地址 :** `/movie/detail`
+`lineId`: 地铁线 , 默认 -1
 
-**调用例子 :** `/movie/detail?movieId=1190122&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+`hallType`: 影厅类型 , 默认-1
 
-### 电影影院筛选
+`brandId`: 影城 , 默认-1
 
-说明 : 调用此接口 ,获取电影影院筛选
+`serviceId`: 影城服务 , 1: 改签 , 2: 退票
 
-**必选参数 :**
+`areaId`: 区域 , 默认 -1
 
-    movieId : 电影ID
+`stationId`: 地铁站 , -1
 
-    day : 日期
+**接口地址 :** /cinemas
 
-**接口地址 :** `/cinema/filter`
+**调用例子 :** /cinemas?ci=20
 
-**调用例子 :** `/cinema/filter?movieId=1190122&day=2020-01-14`
+#### 12. 影院详情
 
-### 电影影院列表
+说明: 影院详情
 
-说明 : 调用此接口 ,获取电影影院列表
+必选参数: 
 
-**必选参数 :**
+`cinemaId`: 影院 ID
 
-    movieId : 电影ID
+**接口地址 :** /cinema
 
-    day : 日期
+**调用例子 :** /cinema?cinemaId=37650
 
-    reqId : 时间戳
+#### 13. 影院播放电影列表
 
-    cityId : 城市id
+说明: 影院播放电影列表
 
-    optimus_uuid : 城市id
+必选参数: 
 
-**可选参数 :**
+`cinemaId`: 影院 ID
 
-    limit : 返回数量
+`ci`: 城市 ID
 
-    offset : 列表起始位置，默认值为 0
+**接口地址 :** /cinema/movies
 
-    districtId : 县区ID, 用于筛选影院
+**调用例子 :** /cinema/movies?ci=20&cinemaId=37650
 
-    areaId : 商区ID, 用于筛选影院
+#### 14. 座位
 
-    hallType : 放映影厅ID, 用于筛选影院
+说明: 座位
 
-    brandId : 影院品牌ID, 用于筛选影院
+必选参数: 
 
-    serviceId : 影院服务ID, 用于筛选影院
+`seqNo`: 电影播放场次 id
 
-    lineId : 地铁线ID, 用于筛选影院
+`ci`: 城市 ID
 
-    stationId : 地铁站ID, 用于筛选影院
+`ct`: 城市名字
 
-**接口地址 :** `/movie/cinema`
+**接口地址 :** /seats
 
-**调用例子 :** `/movie/cinema?movieId=1190122&day=2020-01-14&limit=10&offset=0&districtId=-1&areaId=-1&hallType=-1&brandId=-1&serviceId=-1&lineId=-1&stationId=-1&reqId=1579328443243&cityId=10&optimus_uuid=81816C30379C11EA866471AA6600D9F3FFCD3520A18D43F0B1C3B05472B68BB4`
+**调用例子 :** /seats?seqNo=202208240027839&ci=20&ct=广州
 
-### 影院详情
+#### 15. 搜索电影，影院
 
-说明 : 调用此接口 ,获取影院详情
+说明: 搜索电影和影院，只返回几条数据
 
-**必选参数 :**
+必选参数: 
 
-    cinemaId : 影院id
+`ci`: 城市 ID
 
-    optimus_uuid : uID
+`kw`: 搜索内容
 
-**可选参数 :**
+**接口地址 :** /search
 
-    movieId : 影院id
+**调用例子 :** /search?ci=20&kw=万
 
-**接口地址 :** `/cinema/detail`
+#### 16. 搜索影院
 
-**调用例子 :** `/cinema/detail?movieId=1190122&cinemaId=16097&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+说明: 搜索影院，第一条数据查询不到。
 
-### 选择座位
+必选参数: 
 
-说明 : 调用此接口 ,获取座位详情
+`ci`: 城市 ID
 
-**必选参数 :**
+`kw`: 搜索内容
 
-    cityId : 城市ID
+可选参数: 
 
-    ci : 城市ID
+`limit`: 返回数量 , 默认为 10
 
-    seqNo : 电影影院id
+`offset`: 偏移数量 , 默认为 0
 
-    optimus_uuid : uID
+**接口地址 :** /search/cinemas
 
-**接口地址 :** `/seating`
+**调用例子 :** /search/cinemas?ci=20&kw=万
 
-**调用例子 :** `/seating?cityId=20&ci=20&seqNo=202001140398521&optimus_uuid=0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236`
+#### 17. 搜索电影
 
-### 票房排名
+说明: 搜索电影，第一条数据查询不到。
 
-说明 : 调用此接口 ,获取票房排名详情
+必选参数: 
 
-**可选参数 :**
+`ci`: 城市 ID
 
-    beginDate : 日期
+`kw`: 搜索内容
 
-**接口地址 :** `/piaofang`
+可选参数: 
 
-**调用例子 :** `/piaofang?beginDate=20200108`
+`limit`: 返回数量 , 默认为 10
 
-## 关于此文档
+`offset`: 偏移数量 , 默认为 0
 
-此文档由 [docsify](https://github.com/QingWei-Li/docsify/) 生成 docsify 是一个动
-态生成文档网站的工具。不同于 GitBook、Hexo 的地方是它不会生成将 .md 转成 .html
-文件，所有转换工作都是在运行时进行。
+**接口地址 :** /search/movies
+
+**调用例子 :** /search/movies?ci=20&kw=万
+
+#### 18. 明星详情
+
+说明: 明星详情
+
+必选参数: 
+
+`id`: 明星 ID
+
+**接口地址 :** /celebrity
+
+**调用例子 :** /celebrity?id=28947
+
+## License
+
+[The MIT License (MIT)](https://github.com/Binaryify/NeteaseCloudMusicApi/blob/master/LICENSE)

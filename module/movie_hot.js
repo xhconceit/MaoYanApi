@@ -1,36 +1,16 @@
-//  热映
-const common = require('../util/common')
 module.exports = (query, request) => {
-  let data = Object.assign({}, query, common)
+  query._log && console.log(`module[热映电影]: /movie/hot  ci: 城市id  ct: 城市名字\n`)
+  const params = {
+    ci: query.ci, // 城市id
+    ct: query.ct  // 城市名字
+  }
+  let data ={
+    params,
+    cookie: query.cookie,
+    _log: query._log
+  }
+
   return request(
-    'GET', `http://m.maoyan.com/ajax/movieOnInfoList`, data, {}
+    'GET', `http://i.maoyan.com/api/mmdb/movie/v3/list/hot.json?channelId=4`, data
   )
 }
-// ci:20  城市
-// optimus_uuid: uuid
-
-// ,
-//     {
-//       "name": "热映",
-//       "path": "/movie/hot",
-//       "file": "movie_hot.js",
-//       "method": "GET",
-//       "data": [
-//         {
-//           "name": "ci",
-//           "type": "String",
-//           "default": "",
-//           "details": "城市ID",
-//           "required": true,
-//           "format": "20"
-//         },
-//         {
-//           "name": "optimus_uuid",
-//           "type": "String",
-//           "default": "",
-//           "details": "uID",
-//           "required": true,
-//           "format": "0EBC6C50362911EA9BE0C38C17C05E2EEA46F45F99614B618B06BBA29C86C236"
-//         }
-//       ]
-//     }
